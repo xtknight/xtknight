@@ -1,0 +1,27 @@
+Package: libxinerama1-dbg
+Source: libxinerama
+Version: 2:1.1-2ubuntu1
+Architecture: amd64
+Maintainer: Debian X Strike Force <debian-x@lists.debian.org>
+Installed-Size: 104
+Depends: libxinerama1 (= 2:1.1-2ubuntu1)
+Section: debug
+Priority: extra
+Description: X11 Xinerama extension library (debug package)
+ libXinerama provides an X Window System client interface to the XINERAMA
+ extension to the X protocol.
+ .
+ The Xinerama (also known as panoramiX) extension allows for multiple screens
+ attached to a single display to be treated as belonging together, and to give
+ desktop applications a better idea of the monitor layout.
+ .
+ This package contains the debug versions of the library found in
+ libxinerama1. Non-developers likely have little use for this package.
+ .
+ More information about X.Org can be found at:
+ <URL:http://www.X.org>
+ <URL:http://xorg.freedesktop.org>
+ <URL:http://lists.freedesktop.org/mailman/listinfo/xorg>
+ .
+ This module can be found at
+ git://anongit.freedesktop.org/git/xorg/lib/libXinerama

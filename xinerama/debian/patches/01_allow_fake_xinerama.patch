@@ -1,0 +1,111 @@
+Index: libxinerama-1.1/src/Xinerama.c
+===================================================================
+--- libxinerama-1.1.orig/src/Xinerama.c	2010-08-24 16:35:08.564718004 -0400
++++ libxinerama-1.1/src/Xinerama.c	2010-08-24 16:35:16.184498015 -0400
+@@ -27,6 +27,10 @@
+ 
+ #define NEED_EVENTS
+ #define NEED_REPLIES
++
++#include <stdio.h>
++#include <stdlib.h>
++
+ #include <X11/Xlibint.h>
+ #include <X11/Xutil.h>
+ #include <X11/extensions/Xext.h>
+@@ -47,6 +51,8 @@
+ 
+ static int close_display(Display *dpy, XExtCodes *codes);
+ 
++static XineramaScreenInfo * XineramaGetFake(int *);
++
+ static /* const */ XExtensionHooks panoramiX_extension_hooks = {
+     NULL,				/* create_gc */
+     NULL,				/* copy_gc */
+@@ -267,7 +273,7 @@
+     return rep.state;
+ }
+ 
+-XineramaScreenInfo * 
++XineramaScreenInfo *
+ XineramaQueryScreens(
+    Display *dpy,
+    int     *number
+@@ -280,6 +286,11 @@
+ 
+     PanoramiXCheckExtension (dpy, info, NULL);
+ 
++    if (NULL != (scrnInfo = XineramaGetFake(number)))
++    {
++	return scrnInfo;
++    }
++
+     LockDisplay (dpy);
+     GetReq (XineramaQueryScreens, req);
+     req->reqType = info->codes->major_opcode;
+@@ -315,3 +326,65 @@
+     SyncHandle ();
+     return scrnInfo;
+ }
++
++static XineramaScreenInfo * XineramaGetFake(int * number)
++{
++  	const char * home;
++	char buf[4096];
++	char line[64];
++	FILE * fparse;
++
++	if (number == NULL) return NULL;
++
++	// max: 256 screens
++	int i, screens = 0;
++	struct { int x, y, w, h; } scbuf[256];
++	XineramaScreenInfo *scrnInfo = NULL;
++
++	/* store in tentative, max-length 256 structure so we can allocate just the right amount for XineramaScreenInfo later on */
++
++	home = getenv("HOME");
++	if (home == NULL) return NULL;
++
++	sprintf(buf, "%s/.fakescreens", home);
++
++	if (NULL == (fparse = fopen(buf, "r"))) return NULL;
++
++	while (!feof(fparse))
++	{
++		if (NULL != fgets(line, 64, fparse))
++		{
++			// read file and call sscanf in a way to consume whitespace
++			if (4 == sscanf(line, " .screen %d , %d , %d , %d ", &scbuf[screens].x, &scbuf[screens].y, &scbuf[screens].w, &scbuf[screens].h ))
++			{
++				/*printf("screen: %d\n", screens);
++				printf("\tx: %d\n", scbuf[screens].x);
++				printf("\ty: %d\n", scbuf[screens].y);
++				printf("\tw: %d\n", scbuf[screens].w);
++				printf("\th: %d\n", scbuf[screens].h);*/
++
++				if (++screens >= 256) { /*fprintf(stderr, "Too many screens (> 256)\n");*/ goto close; }
++			}
++		}
++	}
++
++	/* convert tentative structure into Xinerama structure */
++
++	scrnInfo = Xmalloc(sizeof(XineramaScreenInfo) * screens);
++	for (i = 0; i < screens; i++)
++	{
++		scrnInfo[i].screen_number = i;
++		scrnInfo[i].x_org = scbuf[i].x;
++		scrnInfo[i].y_org = scbuf[i].y;
++		scrnInfo[i].width = scbuf[i].w;
++		scrnInfo[i].height = scbuf[i].h;
++	}
++
++	*number = screens;
++	fclose(fparse);
++	return scrnInfo;
++
++close:
++	fclose(fparse);
++	return NULL;
++}

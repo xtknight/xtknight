@@ -1,0 +1,40 @@
+Description: Upstream changes introduced in version 2:1.1-2ubuntu1
+ This patch has been created by dpkg-source during the package build.
+ Here's the last changelog entry, hopefully it gives details on why
+ those changes were made:
+ .
+ libxinerama (2:1.1-2ubuntu1) lucid; urgency=low
+ .
+   * debian/patches/01_allow_fake_xinerama.patch
+     - allow fake Xinerama setup
+ .
+ The person named in the Author field signed this changelog entry.
+Author: Andy Matteson <xt.knight@gmail.com>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- /dev/null
++++ libxinerama-1.1/autogen.sh
+@@ -0,0 +1,12 @@
++#! /bin/sh
++
++srcdir=`dirname $0`
++test -z "$srcdir" && srcdir=.
++
++ORIGDIR=`pwd`
++cd $srcdir
++
++autoreconf -v --install || exit 1
++cd $ORIGDIR || exit $?
++
++$srcdir/configure --enable-maintainer-mode "$@"
